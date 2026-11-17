@@ -1,0 +1,624 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE INVITE MACHINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#100c13;--panel:#1b1520;--pink:#ff75b5;
+  --text:#fff4f7;--muted:#aa9aa9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif}
+button,input,select,textarea{font:inherit}
+header{
+  padding:24px 7%;display:flex;justify-content:space-between;
+  border-bottom:1px solid #332738;
+  font:11px 'DM Mono',monospace;letter-spacing:2px;color:var(--pink)
+}
+main{max-width:1100px;margin:auto;padding:55px 22px 90px}
+.kicker{font:11px 'DM Mono';letter-spacing:3px;color:var(--pink)}
+h1{font:clamp(43px,8vw,85px)/.95 'Archivo Black';letter-spacing:-4px;margin:15px 0}
+h1 span{color:var(--pink)}
+.intro{color:var(--muted);line-height:1.7;max-width:550px}
+.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:25px;margin-top:42px}
+.panel{background:var(--panel);border:1px solid #392b40;border-radius:15px;padding:25px}
+.panel h2{font:12px 'DM Mono';letter-spacing:2px;color:var(--pink);margin:0 0 20px}
+label{display:block;font-size:12px;color:#d8c8d7;margin:18px 0 8px}
+input,select,textarea{
+  width:100%;background:#100c13;border:1px solid #46354a;
+  border-radius:8px;color:white;padding:12px;font-size:14px
+}
+textarea{resize:vertical;min-height:85px}
+input:focus,select:focus,textarea:focus{outline:1px solid var(--pink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.themes{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.theme{
+  background:#100c13;border:1px solid #46354a;color:white;
+  text-align:left;padding:14px;border-radius:9px;cursor:pointer
+}
+.theme.active{border-color:var(--pink);background:#422238}
+.theme b{display:block;font-size:13px}
+.theme small{color:#aa9aaa;font-size:10px}
+button{border:0;border-radius:8px;padding:14px 20px;cursor:pointer;font-weight:700}
+button:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.primary{background:var(--pink);color:#240d1b;width:100%;margin-top:25px}
+.secondary{background:#33243a;color:white;border:1px solid #60476a}
+.notice{color:var(--muted);font-size:11px;line-height:1.7;margin-top:15px}
+.feature-list{font-size:13px;line-height:2.5;color:#e8dce7}
+#inviteView{display:none}
+.invite-page{
+  --ibg:#160509;--ifg:#fff0dc;--ia:#ff4d78;--ia2:#ff9c32;
+  background:var(--ibg);color:var(--ifg);min-height:100vh;
+  text-align:center;position:relative;overflow:hidden
+}
+.invite-page .invite-content{position:relative;z-index:2;max-width:900px;margin:auto;padding:55px 22px 80px}
+.invite-page .kicker{color:var(--ia)}
+.invite-page h1{
+  font-family:var(--invite-font, 'Archivo Black'),Georgia,serif;
+  font-size:clamp(45px,11vw,110px);line-height:1.05;
+  letter-spacing:-3px;color:var(--ifg);margin:35px 0;
+  overflow-wrap:anywhere;text-shadow:0 0 30px color-mix(in srgb,var(--ia),transparent 60%)
+}
+.invite-page .subtitle{font:11px 'DM Mono';letter-spacing:3px;color:var(--ia);line-height:2}
+.invite-page .decor{font-size:26px;color:var(--ia);margin:28px}
+.invite-page hr{border:0;border-top:1px solid var(--ia);opacity:.5;margin:42px auto}
+.invite-page .section{font:11px 'DM Mono';letter-spacing:3px;color:var(--ia);margin:35px 0 22px}
+.invite-page .friends{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.invite-page .friend{border:1px solid var(--ia);padding:15px 22px;font-size:18px;background:color-mix(in srgb,var(--ia),transparent 90%)}
+.invite-page .date{font-size:clamp(22px,5vw,38px);margin:18px 0;color:var(--ia2)}
+.invite-page .clocks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:650px;margin:25px auto}
+.invite-page .clock{border:1px solid color-mix(in srgb,var(--ia),transparent 35%);padding:17px 8px}
+.invite-page .clock small,.invite-page .clock span{display:block;font:10px 'DM Mono';color:var(--ia)}
+.invite-page .clock b{display:block;font-size:24px;margin:9px 0}
+.invite-page .message{font-size:17px;line-height:1.8;max-width:550px;margin:30px auto}
+.invite-page #countdown{font:clamp(23px,6vw,48px) 'Archivo Black';color:var(--ia2);margin:25px 0}
+.invite-page .rsvp{background:var(--ia);color:var(--ibg);padding:17px 35px;margin:20px;font-size:13px}
+.invite-page #reply{font:11px 'DM Mono';color:var(--ia);min-height:20px}
+.invite-page footer{font:10px 'DM Mono';letter-spacing:2px;color:var(--ia);margin-top:60px}
+.invite-toolbar{
+  background:#211a25;color:white;padding:12px 20px;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;font:11px 'DM Mono'
+}
+.invite-toolbar button{font-size:11px;padding:10px}
+#resultPanel{display:none;margin-top:30px}
+#shareUrl{margin-top:12px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.actions button{flex:1}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+#inviteView .invite-page{min-height:100vh}
+#backButton{margin:25px auto;display:block}
+@media(max-width:750px){
+  .layout{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+  main{padding-top:35px}
+  .invite-page .clocks{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <span>✳ THE INVITE MACHINE</span>
+  <span>MAKE IT DRAMATIC.</span>
+</header>
+
+<main id="builder">
+  <div class="kicker">YOUR FRIENDS. YOUR RULES. YOUR DRAMA.</div>
+  <h1>MAKE AN<br><span>ENTRANCE.</span></h1>
+  <p class="intro">
+    Ordinary invitations are boring. Create your own personalized
+    invitation website and send your friends a link.
+    No coding required.
+  </p>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>01 / EVENT DETAILS</h2>
+
+      <label>Event title</label>
+      <input id="eventTitle" value="YOU ARE INVITED" maxlength="100">
+
+      <label>Number of friends</label>
+      <input id="friendCount" type="number" min="1" max="30" value="3">
+
+      <label>Friends' names (one per line)</label>
+      <textarea id="names">Alex
+Jamie
+Taylor</textarea>
+
+      <label>Event date</label>
+      <input id="eventDate" type="date">
+
+      <label>Event time</label>
+      <div class="row">
+        <input id="eventTime" type="time" value="19:00">
+        <select id="eventZone">
+          <option value="Asia/Seoul">Korea (Seoul)</option>
+          <option value="America/New_York">New York</option>
+          <option value="America/Los_Angeles">Los Angeles</option>
+          <option value="Europe/London">London</option>
+          <option value="Europe/Paris">Paris</option>
+          <option value="Asia/Singapore">Singapore</option>
+          <option value="Asia/Tokyo">Tokyo</option>
+          <option value="Australia/Sydney">Sydney</option>
+          <option value="UTC">UTC</option>
+        </select>
+      </div>
+
+      <label>Extra message (optional)</label>
+      <textarea id="message" placeholder="Bring your best stories. Leave your dignity at the door."></textarea>
+
+      <h2 style="margin-top:30px">02 / CHOOSE YOUR THEME</h2>
+      <div class="themes">
+        <button class="theme active" type="button" data-theme="festive">
+          <b>🎆 FESTIVE</b><small>Big drama, fireworks</small>
+        </button>
+        <button class="theme" type="button" data-theme="blacktie">
+          <b>🥂 BLACK-TIE</b><small>Elegant and serious</small>
+        </button>
+        <button class="theme" type="button" data-theme="cute">
+          <b>🎀 CUTE</b><small>Pink, hearts, playful</small>
+        </button>
+        <button class="theme" type="button" data-theme="horror">
+          <b>🕯️ HORROR</b><small>Dark and mysterious</small>
+        </button>
+        <button class="theme" type="button" data-theme="retro">
+          <b>🪩 Y2K</b><small>Retro digital energy</small>
+        </button>
+        <button class="theme" type="button" data-theme="minimal">
+          <b>✳ MINIMAL</b><small>Clean and understated</small>
+        </button>
+      </div>
+
+      <label>Custom subtitle</label>
+      <input id="subtitle" placeholder="An extremely important gathering" maxlength="120">
+
+      <button class="primary" id="generateButton">GENERATE MY INVITATION ✦</button>
+      <p class="notice">
+        Your details are encoded into your invitation link.
+        No account or HTML editing is required.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>03 / YOUR INVITATION WEBSITE</h2>
+      <div style="font-size:42px;margin:15px 0">✉️</div>
+      <h2 style="font:24px 'Archivo Black';color:white;letter-spacing:-1px">
+        ONE LINK. A WHOLE LOT OF DRAMA.
+      </h2>
+      <p class="intro">
+        Create an invitation, then send the link to your friends.
+        They can open it on their phones or computers.
+      </p>
+      <div style="border-top:1px solid #49374e;margin-top:25px;padding-top:20px">
+        <p class="kicker">EVERY INVITATION INCLUDES</p>
+        <div class="feature-list">
+          ✦ Personalized headline<br>
+          ✦ Friend name display<br>
+          ✦ Live countdown<br>
+          ✦ Automatic time-zone conversion<br>
+          ✦ Theme-specific animations<br>
+          ✦ RSVP interaction
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" id="resultPanel">
+    <h2>04 / YOUR INVITATION LINK</h2>
+    <p class="intro">Your invitation is ready! Copy this link and send it to your friends.</p>
+    <input id="shareUrl" readonly>
+    <div class="actions">
+      <button class="primary" id="copyButton">COPY INVITATION LINK</button>
+      <button class="secondary" id="shareButton">SHARE</button>
+      <button class="secondary" id="openButton">OPEN INVITATION</button>
+    </div>
+    <p class="notice" id="shareNotice"></p>
+  </section>
+</main>
+
+<section id="inviteView">
+  <div class="invite-toolbar">
+    <span>✳ YOUR INVITATION</span>
+    <button class="secondary" id="backButton">CREATE ANOTHER</button>
+  </div>
+  <div class="invite-page" id="invitePage">
+    <canvas id="fx"></canvas>
+    <div class="invite-content" id="inviteContent"></div>
+  </div>
+</section>
+
+<script>
+const themes = {
+  festive:{
+    bg:'#160509',fg:'#fff0dc',accent:'#ff4d78',accent2:'#ff9c32',
+    font:"'Archivo Black'",decor:'🎆 ✦ 🎇 ✦ 🎆',effect:'fireworks'
+  },
+  blacktie:{
+    bg:'#090909',fg:'#f6e9c8',accent:'#d5b66a',accent2:'#fff0bd',
+    font:'Georgia',decor:'✦ ✧ ✦',effect:'minimal'
+  },
+  cute:{
+    bg:'#fff0f6',fg:'#6b3151',accent:'#ed79b5',accent2:'#a78bfa',
+    font:'Georgia',decor:'♡ 🎀 ♡',effect:'hearts'
+  },
+  horror:{
+    bg:'#080707',fg:'#e7d6d6',accent:'#b51c2b',accent2:'#76111b',
+    font:'Georgia',decor:'☠ ✦ ☠',effect:'horror'
+  },
+  retro:{
+    bg:'#12082c',fg:'#f9edff',accent:'#ed5bff',accent2:'#54e8ff',
+    font:"'Archivo Black'",decor:'✳ ✦ ✳',effect:'retro'
+  },
+  minimal:{
+    bg:'#f0eee8',fg:'#26231f',accent:'#7e6c61',accent2:'#b8a99b',
+    font:'Georgia',decor:'— ✳ —',effect:'minimal'
+  }
+};
+
+let selectedTheme='festive';
+let countdownTimer=null;
+let effectTimer=null;
+let particles=[];
+let animationFrame=null;
+
+document.querySelectorAll('.theme').forEach(button=>{
+  button.addEventListener('click',()=>{
+    document.querySelectorAll('.theme').forEach(b=>b.classList.remove('active'));
+    button.classList.add('active');
+    selectedTheme=button.dataset.theme;
+  });
+});
+
+const tomorrow=new Date();
+tomorrow.setDate(tomorrow.getDate()+1);
+document.getElementById('eventDate').value=
+  `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function localToUTC(date,time,zone){
+  const [year,month,day]=date.split('-').map(Number);
+  const [hour,minute]=time.split(':').map(Number);
+  let guess=Date.UTC(year,month-1,day,hour,minute);
+
+  for(let i=0;i<3;i++){
+    const parts=new Intl.DateTimeFormat('en-US',{
+      timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',
+      hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+    }).formatToParts(new Date(guess));
+
+    const get=type=>Number(parts.find(p=>p.type===type).value);
+    const represented=Date.UTC(
+      get('year'),get('month')-1,get('day'),get('hour'),get('minute')
+    );
+    guess+=Date.UTC(year,month-1,day,hour,minute)-represented;
+  }
+  return new Date(guess);
+}
+
+function encodeData(data){
+  const bytes=new TextEncoder().encode(JSON.stringify(data));
+  let binary='';
+  bytes.forEach(b=>binary+=String.fromCharCode(b));
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+function decodeData(encoded){
+  const base64=encoded.replace(/-/g,'+').replace(/_/g,'/');
+  const binary=atob(base64);
+  const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function createInvitation(){
+  const count=Number(document.getElementById('friendCount').value);
+  const names=document.getElementById('names').value
+    .split('\n').map(n=>n.trim()).filter(Boolean);
+
+  if(!Number.isInteger(count)||count<1||count>30){
+    alert('Please choose between 1 and 30 friends.');
+    return;
+  }
+  if(names.length!==count){
+    alert(`You selected ${count} friends but entered ${names.length} names.`);
+    return;
+  }
+
+  const date=document.getElementById('eventDate').value;
+  const time=document.getElementById('eventTime').value;
+  const zone=document.getElementById('eventZone').value;
+
+  if(!date||!time){
+    alert('Please enter an event date and time.');
+    return;
+  }
+
+  try{
+    const event=localToUTC(date,time,zone);
+    if(!Number.isFinite(event.getTime()))throw new Error('Invalid date');
+
+    const data={
+      title:document.getElementById('eventTitle').value.trim()||'YOU ARE INVITED',
+      names,
+      date,
+      time,
+      zone,
+      timestamp:event.getTime(),
+      message:document.getElementById('message').value.trim(),
+      subtitle:document.getElementById('subtitle').value.trim(),
+      theme:selectedTheme
+    };
+
+    const encoded=encodeData(data);
+    const url=new URL(location.href);
+    url.hash='invite='+encoded;
+
+    if(location.protocol==='file:'){
+      alert('First publish the generator website online. Once it has a public URL, generated invitations will also have shareable public URLs.');
+      return;
+    }
+
+    const link=url.toString();
+    document.getElementById('shareUrl').value=link;
+    document.getElementById('resultPanel').style.display='block';
+    document.getElementById('shareNotice').textContent=
+      'Your invitation link is ready. Anyone with this link can open the invitation.';
+    document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+    window.generatedInvitationLink=link;
+    window.generatedInvitationData=data;
+  }catch(error){
+    alert('Something went wrong while creating the invitation. Please check your details and try again.');
+    console.error(error);
+  }
+}
+
+document.getElementById('generateButton').addEventListener('click',createInvitation);
+
+document.getElementById('copyButton').addEventListener('click',async()=>{
+  const link=document.getElementById('shareUrl').value;
+  if(!link)return;
+  try{
+    await navigator.clipboard.writeText(link);
+    document.getElementById('copyButton').textContent='COPIED ✓';
+  }catch(error){
+    document.getElementById('shareUrl').select();
+    document.execCommand('copy');
+    document.getElementById('copyButton').textContent='COPIED ✓';
+  }
+});
+
+document.getElementById('shareButton').addEventListener('click',async()=>{
+  const link=window.generatedInvitationLink;
+  if(!link)return;
+  if(navigator.share){
+    try{
+      await navigator.share({
+        title:window.generatedInvitationData.title,
+        text:'You are invited!',
+        url:link
+      });
+    }catch(error){}
+  }else{
+    await navigator.clipboard.writeText(link);
+    alert('Link copied!');
+  }
+});
+
+document.getElementById('openButton').addEventListener('click',()=>{
+  if(window.generatedInvitationLink){
+    history.pushState(null,'',window.generatedInvitationLink);
+    showInvitation(window.generatedInvitationData);
+    window.scrollTo(0,0);
+  }
+});
+
+document.getElementById('backButton').addEventListener('click',()=>{
+  stopEffects();
+  history.pushState(null,'',location.pathname+location.search);
+  document.getElementById('inviteView').style.display='none';
+  document.getElementById('builder').style.display='block';
+  window.scrollTo(0,0);
+});
+
+function stopEffects(){
+  if(countdownTimer)clearInterval(countdownTimer);
+  if(effectTimer)clearInterval(effectTimer);
+  if(animationFrame)cancelAnimationFrame(animationFrame);
+  countdownTimer=null;
+  effectTimer=null;
+  animationFrame=null;
+  particles=[];
+}
+
+function showInvitation(data){
+  if(!data||!themes[data.theme])throw new Error('Invalid invitation data');
+  stopEffects();
+
+  const t=themes[data.theme];
+  const page=document.getElementById('invitePage');
+  page.style.setProperty('--ibg',t.bg);
+  page.style.setProperty('--ifg',t.fg);
+  page.style.setProperty('--ia',t.accent);
+  page.style.setProperty('--ia2',t.accent2);
+  page.style.setProperty('--invite-font',t.font);
+
+  const dateLabel=new Intl.DateTimeFormat('en-US',{
+    weekday:'long',month:'long',day:'numeric',year:'numeric',
+    timeZone:data.zone
+  }).format(new Date(data.timestamp));
+
+  const cities=[
+    ['Seoul','Asia/Seoul'],
+    ['New York','America/New_York'],
+    ['Los Angeles','America/Los_Angeles'],
+    ['London','Europe/London'],
+    ['Paris','Europe/Paris'],
+    ['Singapore','Asia/Singapore'],
+    ['Tokyo','Asia/Tokyo'],
+    ['Sydney','Australia/Sydney']
+  ];
+
+  const clocks=cities.map(([city,tz])=>{
+    const event=new Date(data.timestamp);
+    const timeText=new Intl.DateTimeFormat('en-US',{
+      timeZone:tz,hour:'numeric',minute:'2-digit',hour12:true
+    }).format(event);
+    const dayText=new Intl.DateTimeFormat('en-US',{
+      timeZone:tz,weekday:'short',month:'short',day:'numeric'
+    }).format(event);
+    return `<div class="clock">
+      <small>${city}</small>
+      <b>${timeText}</b>
+      <span>${dayText}</span>
+    </div>`;
+  }).join('');
+
+  const friends=data.names.map(name=>
+    `<div class="friend">${escapeHTML(name)}</div>`
+  ).join('');
+
+  document.getElementById('inviteContent').innerHTML=`
+    <div class="kicker">${escapeHTML(data.subtitle||'A SPECIAL INVITATION')}</div>
+    <div class="decor">${t.decor}</div>
+    <h1>${escapeHTML(data.title)}</h1>
+    <div class="subtitle">YOU HAVE BEEN PERSONALLY SUMMONED</div>
+    <hr>
+    <div class="section">THIS INVITATION IS FOR</div>
+    <div class="friends">${friends}</div>
+    <div class="section">THE DATE HAS BEEN SET</div>
+    <div class="date">${dateLabel}</div>
+    <div class="section">COUNTDOWN TO THE MOMENT</div>
+    <div id="countdown">CALCULATING...</div>
+    <div class="section">LOCAL TIMES AROUND THE WORLD</div>
+    <div class="clocks">${clocks}</div>
+    ${data.message?`<p class="message">${escapeHTML(data.message)}</p>`:''}
+    <div class="decor">${t.decor}</div>
+    <button class="rsvp" id="rsvpButton">I'LL BE THERE ♡</button>
+    <div id="reply"></div>
+    <footer>MADE WITH LOVE · DO NOT BE LATE</footer>
+  `;
+
+  document.getElementById('rsvpButton').addEventListener('click',()=>{
+    document.getElementById('reply').textContent='ATTENDANCE CONFIRMED. SEE YOU THERE!';
+  });
+
+  document.getElementById('builder').style.display='none';
+  document.getElementById('inviteView').style.display='block';
+
+  startCountdown(data.timestamp);
+  startEffects(t.effect,t.accent,t.accent2,t.fg);
+}
+
+function startCountdown(target){
+  function tick(){
+    let diff=target-Date.now();
+    const el=document.getElementById('countdown');
+    if(!el)return;
+    if(diff<=0){el.textContent='THE TIME IS NOW.';return;}
+    const d=Math.floor(diff/86400000);diff%=86400000;
+    const h=Math.floor(diff/3600000);diff%=3600000;
+    const m=Math.floor(diff/60000);
+    const s=Math.floor(diff%60000/1000);
+    el.textContent=d+'D '+String(h).padStart(2,'0')+':'+
+      String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  tick();
+  countdownTimer=setInterval(tick,1000);
+}
+
+function startEffects(effect,accent,accent2,fg){
+  if(effect==='minimal')return;
+
+  const canvas=document.getElementById('fx');
+  const ctx=canvas.getContext('2d');
+  let width=0,height=0;
+  function resize(){
+    width=canvas.width=canvas.clientWidth;
+    height=canvas.height=canvas.clientHeight;
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  const colors=[accent,accent2,fg];
+  function burst(x,y){
+    for(let i=0;i<45;i++){
+      const a=Math.random()*Math.PI*2;
+      const speed=Math.random()*4+1;
+      particles.push({
+        x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,
+        life:1,size:Math.random()*3+1
+      });
+    }
+  }
+
+  if(effect==='fireworks'||effect==='retro'){
+    effectTimer=setInterval(()=>{
+      burst(Math.random()*width,Math.random()*height*.65);
+    },effect==='retro'?1700:1200);
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,width,height);
+    particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.025;p.life-=.014;
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=colors[Math.floor(Math.random()*colors.length)];
+      ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+    });
+    ctx.globalAlpha=1;
+    animationFrame=requestAnimationFrame(draw);
+  }
+  draw();
+
+  if(effect==='hearts'){
+    effectTimer=setInterval(()=>{
+      const heart=document.createElement('div');
+      heart.textContent='♡';
+      heart.style.cssText=
+        `position:absolute;left:${Math.random()*90}%;bottom:0;color:${accent};font-size:25px;animation:heartFloat 4s linear forwards;z-index:2;pointer-events:none`;
+      canvas.parentElement.appendChild(heart);
+      setTimeout(()=>heart.remove(),4000);
+    },600);
+  }
+
+  if(effect==='horror'){
+    effectTimer=setInterval(()=>{
+      canvas.parentElement.style.filter=
+        `brightness(${.8+Math.random()*.2})`;
+    },500);
+  }
+}
+
+const style=document.createElement('style');
+style.textContent='@keyframes heartFloat{to{transform:translateY(-90vh) rotate(35deg);opacity:0}}';
+document.head.appendChild(style);
+
+function loadFromLink(){
+  const match=location.hash.match(/invite=([^&]+)/);
+  if(!match)return;
+  try{
+    const data=decodeData(match[1]);
+    showInvitation(data);
+  }catch(error){
+    alert('This invitation link is invalid or incomplete.');
+    console.error(error);
+  }
+}
+
+window.addEventListener('popstate',loadFromLink);
+window.addEventListener('hashchange',loadFromLink);
+loadFromLink();
+</script>
+</body>
+</html>
